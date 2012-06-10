@@ -5,7 +5,7 @@ namespace :db do
                          email: "hi@charliegleason.com",
                          password: "charlie",
                          password_confirmation: "charlie")
-    admin.toggle!(:admin)
+    admin.toggle!(:admin)    
     99.times do |n|
       name  = Faker::Name.name
       email = "example-#{n+1}@railstutorial.org"

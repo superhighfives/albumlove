@@ -1,18 +1,27 @@
 class UsersController < ApplicationController
-  before_filter :signed_in_user, only: [:index, :edit, :update, :destroy]
-  before_filter :correct_user,   only: [:edit, :update]
-  before_filter :admin_user,     only: :destroy
+  before_filter :signed_in_user,        only: [:index, :edit, :update, :destroy]
+  before_filter :correct_user,          only: [:edit, :update]
+  before_filter :admin_user,            only: [:destroy]
+  before_filter :avoid_destroy_self,    only: [:destroy]
 
   def index
     @users = User.paginate(page: params[:page])
   end
   def new
+    if signed_in?
+      flash[:error] = "You're already logged in"
+      redirect_to root_path
+    end
     @user = User.new
   end
   def show
     @user = User.find(params[:id])
   end
   def create
+    if signed_in?
+      flash[:error] = "You're already logged in"
+      redirect_to root_path
+    end
     @user = User.new(params[:user])
     if @user.save
       sign_in @user
@@ -44,8 +53,13 @@ class UsersController < ApplicationController
     def signed_in_user
       unless signed_in?
         store_location
-        redirect_to signin_path, notice: "Please sign in."
+        redirect_to signin_path, notice: "Please sign in"
       end
+    end
+
+    def avoid_destroy_self
+      @user = User.find(params[:id])
+      redirect_to users_path, :notice => "You can't delete yourself" unless !current_user?(@user)
     end
 
     def correct_user
